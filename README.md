@@ -7,6 +7,14 @@ Manager, sin dependencias externas.
   <img src="Assets/icon-1024.png" width="150" alt="Icono de Topo">
 </p>
 
+<p align="center">
+  <a href="https://github.com/carlosuv92/topo-app/releases/latest">
+    <img src="https://img.shields.io/github/v/release/carlosuv92/topo-app?label=descargar&style=for-the-badge&color=2FC88F" alt="Descargar la última versión">
+  </a>
+  <img src="https://img.shields.io/badge/macOS-14%2B-2FC0D8?style=for-the-badge" alt="macOS 14+">
+  <img src="https://img.shields.io/badge/licencia-MIT-2B7BFF?style=for-the-badge" alt="MIT">
+</p>
+
 ```
 topo/
 ├── Package.swift
@@ -22,13 +30,13 @@ topo/
 
 ## Instalar
 
-La forma más rápida es el instalador: instala **la app y el comando `topo`**
-en una sola pasada.
+Descarga el instalador desde **[Releases](https://github.com/carlosuv92/topo-app/releases/latest)**.
+Incluye **la app y el comando `topo`** en una sola pasada.
 
-```bash
-make pkg                      # genera dist/topo-0.1.0.pkg
-open dist/topo-0.1.0.pkg      # doble clic → Instalar
-```
+> **Aviso de macOS.** La app no está notarizada por Apple, así que la primera
+> vez macOS la bloquea. Tras intentar abrirla: **Ajustes del Sistema →
+> Privacidad y seguridad → Abrir igualmente**. En la página del release están
+> los pasos detallados.
 
 El paquete coloca:
 
@@ -37,7 +45,14 @@ El paquete coloca:
 | `/Applications/Topo.app` | la aplicación |
 | `/usr/local/bin/topo` | enlace al binario, para usar el CLI desde Terminal |
 
-Alternativa sin `.pkg` (desde el repo):
+### Desde el código
+
+```bash
+make pkg                      # genera dist/topo-0.1.0.pkg
+open dist/topo-0.1.0.pkg      # doble clic → Instalar
+```
+
+Alternativa sin `.pkg`:
 
 ```bash
 ./Scripts/install.sh           # copia a /Applications y enlaza el comando
@@ -59,6 +74,13 @@ Equivalente manual:
 swift build            # compilar
 ./Scripts/bundle.sh    # generar dist/Topo.app
 open dist/Topo.app
+```
+
+En release el binario se compila **universal** (Apple Silicon + Intel). Para
+saltarte ese paso durante el desarrollo:
+
+```bash
+TOPO_NATIVE=1 ./Scripts/bundle.sh    # solo la arquitectura de tu Mac
 ```
 
 Para desarrollo rápido también sirve `swift run`, aunque sin bundle la app
@@ -177,12 +199,27 @@ icono se verá cuadrado.
 
 ## Distribución
 
-- El `.pkg` no está firmado ni notarizado todavía: al abrirlo en otro Mac,
-  macOS puede pedir confirmación (clic derecho → Abrir).
-- Con una cuenta de Developer ID, el paso pendiente es
+Cada versión se publica como *release* con tres adjuntos:
+
+| Archivo | Para qué |
+| --- | --- |
+| `topo-VERSION.pkg` | instalador: app + comando `topo` |
+| `Topo-VERSION.zip` | solo la app, para arrastrar a `/Applications` |
+| `SHA256SUMS.txt` | verificación de la descarga |
+
+```bash
+make pkg                                        # construye el .pkg
+ditto -c -k --keepParent dist/Topo.app dist/Topo-0.1.0.zip
+shasum -a 256 dist/topo-0.1.0.pkg dist/Topo-0.1.0.zip > dist/SHA256SUMS.txt
+gh release create v0.1.0 dist/topo-0.1.0.pkg dist/Topo-0.1.0.zip dist/SHA256SUMS.txt \
+  --title "Topo 0.1.0" --notes-file NOTAS.md
+```
+
+- La app se firma **ad-hoc** en `Scripts/bundle.sh`: macOS mantiene estable la
+  identidad entre ejecuciones, pero Gatekeeper sigue avisando porque no hay
+  notarización de Apple.
+- Para quitar el aviso en otras Macs hace falta una cuenta de Developer ID y
   `productsign` + `notarytool submit`.
-- La app se firma ad-hoc en `Scripts/bundle.sh` para que macOS mantenga
-  estable la identidad entre ejecuciones.
 
 ## Pendiente / ideas
 
