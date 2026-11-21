@@ -12,9 +12,16 @@ BUILD_DIR="$ROOT/.build/$CONFIG"
 DIST="$ROOT/dist/$APP_NAME.app"
 
 echo "▸ Compilando ($CONFIG)…"
-swift build -c "$CONFIG"
-
-BIN="$BUILD_DIR/$EXEC_NAME"
+# En release compilamos universal (Apple Silicon + Intel) para que el
+# instalador sirva en cualquier Mac. Usa TOPO_NATIVE=1 para forzar la
+# arquitectura nativa y acelerar el ciclo de desarrollo.
+if [[ "$CONFIG" == "release" && "${TOPO_NATIVE:-0}" != "1" ]]; then
+  swift build -c "$CONFIG" --arch arm64 --arch x86_64
+  BIN="$ROOT/.build/out/Products/Release/$EXEC_NAME"
+else
+  swift build -c "$CONFIG"
+  BIN="$BUILD_DIR/$EXEC_NAME"
+fi
 if [[ ! -f "$BIN" ]]; then
   echo "No se encontró el binario en $BIN" >&2
   exit 1
