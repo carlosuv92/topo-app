@@ -46,7 +46,11 @@ enum Optimizer {
                     detail: "Repara apps duplicadas en «Abrir con» y en el Finder.",
                     symbol: "square.stack.3d.up",
                     requiresAdmin: false,
-                    command: "\(lsregister) -kill -r -domain local -domain system -domain user"
+                    // `-kill` se eliminó de macOS: aborta con código 64 sin
+                    // reconstruir nada. El equivalente soportado es forzar el
+                    // re-escaneo (-r -f) y compactar la base con -gc; después
+                    // se reinicia `lsd` para que Finder aplique los cambios.
+                    command: "\(lsregister) -r -f -gc -domain local -domain system -domain user && ( /usr/bin/killall lsd 2>/dev/null || true )"
                 )
             )
         }
